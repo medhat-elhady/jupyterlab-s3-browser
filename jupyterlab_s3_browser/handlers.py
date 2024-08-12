@@ -49,7 +49,17 @@ def create_s3_resource(config):
 
     else:
         return boto3.resource("s3")
-
+    
+def check_bucket_access(bucket_name):
+    # Initialize a session using Amazon S3
+    s3 = boto3.client('s3')
+    
+    try:
+        # Try to access the bucket by listing its contents
+        s3.head_bucket(Bucket=bucket_name)
+        return True
+    except:
+        return False
 
 def _test_aws_s3_role_access():
     """
@@ -243,7 +253,7 @@ class S3Handler(APIHandler):
                     map(convertS3FStoJupyterFormat, self.s3fs.listdir(path))
                 )
                 result = list(filter(lambda x: x["name"] != "", raw_result))
-
+                result = list(filter(lambda x: check_bucket_access(x["name"]), result))
         except S3ResourceNotFoundException as e:
             result = {
                 "error": 404,
