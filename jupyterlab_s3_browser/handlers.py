@@ -92,6 +92,17 @@ def has_aws_s3_role_access():
         logging.error(e)
         return False
 
+def check_bucket_access(bucket_name):
+    # Initialize a session using Amazon S3
+    s3 = boto3.client('s3')
+    
+    try:
+        # Try to access the bucket by listing its contents
+        s3.head_bucket(Bucket=bucket_name)
+        return True
+    except:
+        return False
+    
 
 def test_s3_credentials(endpoint_url, client_id, client_secret, session_token):
     """
@@ -109,7 +120,7 @@ def test_s3_credentials(endpoint_url, client_id, client_secret, session_token):
     logging.debug(
         [
             {"name": bucket.name + "/", "path": bucket.name + "/", "type": "directory"}
-            for bucket in all_buckets
+            for bucket in all_buckets if check_bucket_access(bucket.name)
         ]
     )
 
@@ -174,7 +185,7 @@ class S3Handler(APIHandler):
         Takes a path and returns lists of files/objects
         and directories/prefixes based on the path.
         """
-        path = path[1:]
+        path = path
 
         try:
             if not self.s3fs:
@@ -210,7 +221,7 @@ class S3Handler(APIHandler):
         Takes a path and returns lists of files/objects
         and directories/prefixes based on the path.
         """
-        path = path[1:]
+        path = path
 
         result = {}
 
@@ -274,7 +285,7 @@ class S3Handler(APIHandler):
         Takes a path and returns lists of files/objects
         and directories/prefixes based on the path.
         """
-        path = path[1:]
+        path = path
         #  logging.info("DELETE: {}".format(path))
 
         result = {}
